@@ -1,0 +1,54 @@
+{
+  "accuracy": 0.8987,
+  "auc_roc": 0.8987,
+  "n_train": 40000,
+  "n_test": 10000,
+  "features": [
+    "age",
+    "income",
+    "coapplicant_income",
+    "total_income",
+    "loan_amount",
+    "loan_term",
+    "monthly_installment",
+    "credit_score",
+    "credit_bucket",
+    "employment_yrs",
+    "existing_loans",
+    "num_dependents",
+    "debt_to_income",
+    "loan_income_ratio",
+    "income_per_dependent",
+    "self_employed",
+    "education_grad",
+    "area_urban",
+    "area_semi_urban"
+  ],
+  "classification_report": {
+    "Rejected": {
+      "precision": 0.9203765227021041,
+      "recall": 0.9658338175479373,
+      "f1-score": 0.9425574142330593,
+      "support": 8605.0
+    },
+    "Approved": {
+      "precision": 0.6969072164948453,
+      "recall": 0.4845878136200717,
+      "f1-score": 0.5716701902748414,
+      "support": 1395.0
+    },
+    "accuracy": 0.8987,
+    "macro avg": {
+      "precision": 0.8086418695984747,
+      "recall": 0.7252108155840045,
+      "f1-score": 0.7571138022539503,
+      "support": 10000.0
+    },
+    "weighted avg": {
+      "precision": 0.8892025544861916,
+      "recall": 0.8987,
+      "f1-score": 0.8908186464908878,
+      "support": 10000.0
+    }
+  }
+}

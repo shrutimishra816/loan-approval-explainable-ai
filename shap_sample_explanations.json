@@ -1,0 +1,127 @@
+[
+  {
+    "applicant_index": 30914,
+    "top_factors": [
+      {
+        "feature": "debt_to_income",
+        "shap": 1.4178
+      },
+      {
+        "feature": "credit_score",
+        "shap": 1.3598
+      },
+      {
+        "feature": "existing_loans",
+        "shap": 0.6503
+      },
+      {
+        "feature": "credit_bucket",
+        "shap": 0.206
+      },
+      {
+        "feature": "employment_yrs",
+        "shap": 0.1552
+      }
+    ]
+  },
+  {
+    "applicant_index": 24909,
+    "top_factors": [
+      {
+        "feature": "credit_score",
+        "shap": 1.6464
+      },
+      {
+        "feature": "debt_to_income",
+        "shap": 1.1033
+      },
+      {
+        "feature": "education_grad",
+        "shap": 0.3685
+      },
+      {
+        "feature": "credit_bucket",
+        "shap": 0.3596
+      },
+      {
+        "feature": "loan_income_ratio",
+        "shap": 0.1455
+      }
+    ]
+  },
+  {
+    "applicant_index": 23652,
+    "top_factors": [
+      {
+        "feature": "debt_to_income",
+        "shap": 1.129
+      },
+      {
+        "feature": "credit_score",
+        "shap": 1.0478
+      },
+      {
+        "feature": "existing_loans",
+        "shap": 0.6324
+      },
+      {
+        "feature": "credit_bucket",
+        "shap": 0.2192
+      },
+      {
+        "feature": "loan_amount",
+        "shap": 0.1802
+      }
+    ]
+  },
+  {
+    "applicant_index": 25950,
+    "top_factors": [
+      {
+        "feature": "debt_to_income",
+        "shap": 1.0567
+      },
+      {
+        "feature": "credit_score",
+        "shap": 1.04
+      },
+      {
+        "feature": "existing_loans",
+        "shap": 0.9435
+      },
+      {
+        "feature": "loan_amount",
+        "shap": 0.1849
+      },
+      {
+        "feature": "employment_yrs",
+        "shap": 0.172
+      }
+    ]
+  },
+  {
+    "applicant_index": 37748,
+    "top_factors": [
+      {
+        "feature": "debt_to_income",
+        "shap": 2.2916
+      },
+      {
+        "feature": "credit_score",
+        "shap": 0.8744
+      },
+      {
+        "feature": "loan_income_ratio",
+        "shap": 0.2444
+      },
+      {
+        "feature": "credit_bucket",
+        "shap": 0.1863
+      },
+      {
+        "feature": "employment_yrs",
+        "shap": 0.1753
+      }
+    ]
+  }
+]

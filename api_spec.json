@@ -1,0 +1,128 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Loan Approval Prediction API",
+    "version": "1.0.0",
+    "description": "Explainable ML API for loan approval decisions. Returns decision, probability, and SHAP-based human-readable factors for compliance review."
+  },
+  "servers": [
+    { "url": "http://localhost:5002" }
+  ],
+  "paths": {
+    "/predict": {
+      "post": {
+        "summary": "Get a loan approval decision with explanation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "age", "income", "coapplicant_income", "loan_amount",
+                  "loan_term", "credit_score", "employment_yrs",
+                  "existing_loans", "num_dependents", "self_employed",
+                  "education_grad", "area_urban", "area_semi_urban"
+                ],
+                "properties": {
+                  "age": { "type": "integer", "example": 35 },
+                  "income": { "type": "number", "example": 60000 },
+                  "coapplicant_income": { "type": "number", "example": 20000 },
+                  "loan_amount": { "type": "number", "example": 500000 },
+                  "loan_term": { "type": "integer", "example": 36, "description": "Months" },
+                  "credit_score": { "type": "integer", "example": 720 },
+                  "employment_yrs": { "type": "integer", "example": 5 },
+                  "existing_loans": { "type": "integer", "example": 1 },
+                  "num_dependents": { "type": "integer", "example": 2 },
+                  "self_employed": { "type": "integer", "enum": [0, 1], "example": 0 },
+                  "education_grad": { "type": "integer", "enum": [0, 1], "example": 1 },
+                  "area_urban": { "type": "integer", "enum": [0, 1], "example": 1 },
+                  "area_semi_urban": { "type": "integer", "enum": [0, 1], "example": 0 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful prediction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decision": { "type": "string", "enum": ["Approved", "Rejected"] },
+                    "probability_approved": { "type": "number", "example": 0.4213 },
+                    "explanation": {
+                      "type": "object",
+                      "properties": {
+                        "supporting_factors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "feature": { "type": "string" },
+                              "impact": { "type": "number" }
+                            }
+                          }
+                        },
+                        "opposing_factors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "feature": { "type": "string" },
+                              "impact": { "type": "number" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "input_summary": {
+                      "type": "object",
+                      "properties": {
+                        "credit_score": { "type": "integer" },
+                        "total_income": { "type": "number" },
+                        "loan_amount": { "type": "number" },
+                        "debt_to_income": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Missing required fields" },
+          "503": { "description": "Model not loaded" }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Service health check",
+        "responses": {
+          "200": {
+            "description": "Service status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" },
+                    "model_loaded": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model-card": {
+      "get": {
+        "summary": "Returns the model card documentation (Markdown)",
+        "responses": { "200": { "description": "Model card content" } }
+      }
+    }
+  }
+}
