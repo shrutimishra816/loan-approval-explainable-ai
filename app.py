@@ -52,14 +52,21 @@ REQUIRED_RAW_FIELDS = [
 
 # ── Load model + explainer once at startup ───────────────────────────────────
 
+MODEL_PATH = os.path.join(BASE_DIR, "loan_model.joblib")
+
+if not os.path.exists(MODEL_PATH):
+    print("[INFO] loan_model.joblib not found — training now, please wait...")
+    import train_model
+    print("[INFO] Training complete.")
+
 try:
-    model = joblib.load(os.path.join(BASE_DIR, "loan_model.joblib"))
+    model = joblib.load(MODEL_PATH)
     explainer = shap.TreeExplainer(model)
     MODEL_LOADED = True
-except FileNotFoundError:
+except Exception as e:
     model, explainer = None, None
     MODEL_LOADED = False
-    print("[WARN] loan_model.joblib not found. Run `python train_model.py` first.")
+    print(f"[WARN] Could not load model: {e}")
 
 
 # ── Feature engineering (must mirror train_model.py) ─────────────────────────
