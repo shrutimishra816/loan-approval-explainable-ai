@@ -1,14 +1,15 @@
 """
-api.py — Loan Approval REST API
----------------------------------
-Flask API serving the trained XGBoost loan approval model with
-SHAP-based human-readable explanations for compliance review.
+api.py — Loan Approval REST API + Frontend
+-------------------------------------------
+Flask app serving the trained XGBoost loan approval model with
+SHAP-based human-readable explanations, plus an interactive web UI.
 
 Endpoints:
-  POST /predict        → decision + probability + SHAP explanation
+  GET  /                → interactive frontend (LoanSight UI)
+  POST /predict         → decision + probability + SHAP explanation
   GET  /health          → service health check
-  GET  /model-card       → returns model_card.md content
-  GET  /api-spec         → returns this API's OpenAPI-style spec
+  GET  /model-card      → returns model_card.md content
+  GET  /api-spec        → returns this API's OpenAPI-style spec
 
 Setup:
   pip install -r requirements.txt
@@ -17,12 +18,22 @@ Setup:
 """
 
 import json
+import os
 import joblib
 import pandas as pd
 import shap
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
-app = Flask(__name__)
+# ── Point Flask at the frontend folder ───────────────────────────────────────
+
+BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+FRONTEND   = os.path.join(BASE_DIR, "frontend")
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(FRONTEND, "templates"),
+    static_folder=os.path.join(FRONTEND, "static"),
+)
 
 FEATURE_COLS = [
     "age", "income", "coapplicant_income", "total_income",
@@ -42,7 +53,7 @@ REQUIRED_RAW_FIELDS = [
 # ── Load model + explainer once at startup ───────────────────────────────────
 
 try:
-    model = joblib.load("loan_model.joblib")
+    model = joblib.load(os.path.join(BASE_DIR, "loan_model.joblib"))
     explainer = shap.TreeExplainer(model)
     MODEL_LOADED = True
 except FileNotFoundError:
@@ -51,7 +62,7 @@ except FileNotFoundError:
     print("[WARN] loan_model.joblib not found. Run `python train_model.py` first.")
 
 
-# ── Feature engineering (must mirror train_model.py) ────────────────────────
+# ── Feature engineering (must mirror train_model.py) ─────────────────────────
 
 def engineer_features(raw: dict) -> pd.DataFrame:
     total_income = raw["income"] + raw["coapplicant_income"]
@@ -97,6 +108,12 @@ def engineer_features(raw: dict) -> pd.DataFrame:
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
+
+@app.route("/", methods=["GET"])
+def index():
+    """Serve the LoanSight interactive frontend."""
+    return render_template("index.html")
+
 
 @app.route("/health", methods=["GET"])
 def health():
@@ -148,7 +165,7 @@ def predict():
 @app.route("/model-card", methods=["GET"])
 def model_card():
     try:
-        with open("model_card.md") as f:
+        with open(os.path.join(BASE_DIR, "model_card.md")) as f:
             return f.read(), 200, {"Content-Type": "text/markdown"}
     except FileNotFoundError:
         return jsonify({"error": "model_card.md not found"}), 404
@@ -157,16 +174,17 @@ def model_card():
 @app.route("/api-spec", methods=["GET"])
 def api_spec():
     try:
-        with open("api_spec.json") as f:
+        with open(os.path.join(BASE_DIR, "api_spec.json")) as f:
             return json.load(f)
     except FileNotFoundError:
         return jsonify({"error": "api_spec.json not found"}), 404
 
 
 if __name__ == "__main__":
-    print("\n Loan Approval API running at http://localhost:5002")
-    print(" POST /predict   — get decision + SHAP explanation")
-    print(" GET  /health    — health check")
-    print(" GET  /model-card — model documentation")
-    print(" GET  /api-spec   — API specification\n")
+    print("\n LoanSight API + UI running at http://localhost:5002")
+    print(" GET  /            — interactive frontend")
+    print(" POST /predict     — get decision + SHAP explanation")
+    print(" GET  /health      — health check")
+    print(" GET  /model-card  — model documentation")
+    print(" GET  /api-spec    — API specification\n")
     app.run(port=5002, debug=True)

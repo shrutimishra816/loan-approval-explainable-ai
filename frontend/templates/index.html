@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoanSight — Explainable Loan Decisions</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-mark">◈</span>
+        <span class="logo-text">LoanSight</span>
+        <span class="logo-tag">Explainable AI</span>
+      </div>
+      <nav class="header-links">
+        <a href="/model-card" target="_blank">Model Card</a>
+        <a href="/api-spec" target="_blank">API Spec</a>
+        <a href="https://github.com/yourusername/loan-approval-explainable-ai" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-label">XGBoost · SHAP · Flask</div>
+        <h1 class="hero-title">Every loan decision,<br><em>explained</em>.</h1>
+        <p class="hero-sub">
+          89.9% accuracy on 50,000+ applicants. Not just a verdict — the reasons behind it,
+          in plain language your compliance team can audit.
+        </p>
+        <div class="hero-stats">
+          <div class="stat"><span class="stat-val">89.9%</span><span class="stat-lbl">Accuracy</span></div>
+          <div class="stat-divider"></div>
+          <div class="stat"><span class="stat-val">0.899</span><span class="stat-lbl">AUC-ROC</span></div>
+          <div class="stat-divider"></div>
+          <div class="stat"><span class="stat-val">19</span><span class="stat-lbl">Features</span></div>
+          <div class="stat-divider"></div>
+          <div class="stat"><span class="stat-val">50k+</span><span class="stat-lbl">Applicants</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Applicant Form + Result -->
+    <section class="predict-section">
+      <div class="predict-inner">
+
+        <!-- Form Panel -->
+        <div class="form-panel">
+          <div class="panel-header">
+            <span class="panel-step">01</span>
+            <h2>Applicant Details</h2>
+          </div>
+
+          <form id="predict-form" novalidate>
+
+            <fieldset>
+              <legend>Personal</legend>
+              <div class="field-row">
+                <div class="field">
+                  <label for="age">Age</label>
+                  <input type="number" id="age" name="age" min="18" max="80" placeholder="35" required />
+                </div>
+                <div class="field">
+                  <label for="num_dependents">Dependents</label>
+                  <input type="number" id="num_dependents" name="num_dependents" min="0" max="10" placeholder="2" required />
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label>Education</label>
+                  <div class="toggle-group" id="education_grad">
+                    <button type="button" class="toggle active" data-val="1">Graduate</button>
+                    <button type="button" class="toggle" data-val="0">Not Graduate</button>
+                  </div>
+                  <input type="hidden" id="education_grad_val" value="1" />
+                </div>
+                <div class="field">
+                  <label>Employment</label>
+                  <div class="toggle-group" id="self_employed">
+                    <button type="button" class="toggle active" data-val="0">Salaried</button>
+                    <button type="button" class="toggle" data-val="1">Self-employed</button>
+                  </div>
+                  <input type="hidden" id="self_employed_val" value="0" />
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Financial</legend>
+              <div class="field-row">
+                <div class="field">
+                  <label for="income">Annual Income (₹)</label>
+                  <input type="number" id="income" name="income" min="0" placeholder="600000" required />
+                </div>
+                <div class="field">
+                  <label for="coapplicant_income">Co-applicant Income (₹)</label>
+                  <input type="number" id="coapplicant_income" name="coapplicant_income" min="0" placeholder="200000" required />
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="credit_score">Credit Score</label>
+                  <input type="number" id="credit_score" name="credit_score" min="300" max="850" placeholder="720" required />
+                  <div class="field-hint" id="credit-band"></div>
+                </div>
+                <div class="field">
+                  <label for="existing_loans">Existing Loans</label>
+                  <input type="number" id="existing_loans" name="existing_loans" min="0" max="10" placeholder="1" required />
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="employment_yrs">Employment Years</label>
+                  <input type="number" id="employment_yrs" name="employment_yrs" min="0" placeholder="5" required />
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Loan</legend>
+              <div class="field-row">
+                <div class="field">
+                  <label for="loan_amount">Loan Amount (₹)</label>
+                  <input type="number" id="loan_amount" name="loan_amount" min="0" placeholder="500000" required />
+                </div>
+                <div class="field">
+                  <label for="loan_term">Term (months)</label>
+                  <select id="loan_term" name="loan_term" required>
+                    <option value="">Select</option>
+                    <option value="12">12 months</option>
+                    <option value="24">24 months</option>
+                    <option value="36" selected>36 months</option>
+                    <option value="48">48 months</option>
+                    <option value="60">60 months</option>
+                    <option value="84">84 months</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Property Area</legend>
+              <div class="area-toggle-group">
+                <button type="button" class="area-toggle" id="area-urban" data-area="urban">Urban</button>
+                <button type="button" class="area-toggle active" id="area-semi" data-area="semi">Semi-Urban</button>
+                <button type="button" class="area-toggle" id="area-rural" data-area="rural">Rural</button>
+              </div>
+              <input type="hidden" id="area_urban_val" value="0" />
+              <input type="hidden" id="area_semi_urban_val" value="1" />
+            </fieldset>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-predict" id="submit-btn">
+                <span class="btn-text">Evaluate Application</span>
+                <span class="btn-spinner" hidden>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                  </svg>
+                </span>
+              </button>
+              <button type="button" class="btn-demo" id="demo-btn">Load Demo</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Result Panel -->
+        <div class="result-panel" id="result-panel">
+
+          <div class="result-empty" id="result-empty">
+            <div class="empty-icon">◈</div>
+            <p>Fill in the applicant details and click <strong>Evaluate Application</strong> to see the AI decision with SHAP explanation.</p>
+          </div>
+
+          <div class="result-content" id="result-content" hidden>
+            <div class="panel-header">
+              <span class="panel-step">02</span>
+              <h2>Decision</h2>
+            </div>
+
+            <!-- Verdict -->
+            <div class="verdict-card" id="verdict-card">
+              <div class="verdict-badge" id="verdict-badge"></div>
+              <div class="verdict-body">
+                <div class="verdict-label">Decision</div>
+                <div class="verdict-text" id="verdict-text"></div>
+                <div class="prob-bar-wrap">
+                  <div class="prob-bar-label">
+                    <span>Approval likelihood</span>
+                    <span id="prob-pct"></span>
+                  </div>
+                  <div class="prob-bar">
+                    <div class="prob-fill" id="prob-fill"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Input Summary -->
+            <div class="summary-strip" id="summary-strip">
+              <div class="sum-item"><span class="sum-lbl">Credit Score</span><span class="sum-val" id="sum-credit"></span></div>
+              <div class="sum-item"><span class="sum-lbl">Total Income</span><span class="sum-val" id="sum-income"></span></div>
+              <div class="sum-item"><span class="sum-lbl">Loan Amount</span><span class="sum-val" id="sum-loan"></span></div>
+              <div class="sum-item"><span class="sum-lbl">Debt-to-Income</span><span class="sum-val" id="sum-dti"></span></div>
+            </div>
+
+            <!-- SHAP Explanation -->
+            <div class="explanation">
+              <div class="panel-header">
+                <span class="panel-step">03</span>
+                <h2>Why this decision?</h2>
+              </div>
+
+              <div class="factors-grid">
+                <div class="factors-col factors-for">
+                  <div class="factors-heading factors-heading--for">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Supporting factors
+                  </div>
+                  <ul class="factors-list" id="factors-for"></ul>
+                </div>
+                <div class="factors-col factors-against">
+                  <div class="factors-heading factors-heading--against">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Opposing factors
+                  </div>
+                  <ul class="factors-list" id="factors-against"></ul>
+                </div>
+              </div>
+
+              <div class="shap-note">
+                SHAP (SHapley Additive exPlanations) values show each feature's contribution to this decision.
+                Positive = pushes toward approval. Negative = pushes toward rejection.
+              </div>
+            </div>
+
+            <button class="btn-reset" id="reset-btn">← New Application</button>
+          </div>
+
+          <div class="result-error" id="result-error" hidden>
+            <div class="error-icon">⚠</div>
+            <p id="error-msg">Something went wrong. Is the API server running?</p>
+            <button class="btn-demo" id="retry-btn">Try again</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how-section">
+      <div class="how-inner">
+        <h2 class="how-title">How it works</h2>
+        <div class="pipeline">
+          <div class="pipe-step">
+            <div class="pipe-num">1</div>
+            <div class="pipe-body">
+              <div class="pipe-label">Raw Input</div>
+              <div class="pipe-desc">13 fields from the applicant form</div>
+            </div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">
+            <div class="pipe-num">2</div>
+            <div class="pipe-body">
+              <div class="pipe-label">Feature Engineering</div>
+              <div class="pipe-desc">19 features: ratios, credit buckets, income totals</div>
+            </div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">
+            <div class="pipe-num">3</div>
+            <div class="pipe-body">
+              <div class="pipe-label">XGBoost Classifier</div>
+              <div class="pipe-desc">Trained on 40k applicants, AUC 0.899</div>
+            </div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">
+            <div class="pipe-num">4</div>
+            <div class="pipe-body">
+              <div class="pipe-label">SHAP Explainer</div>
+              <div class="pipe-desc">Per-feature contribution scores</div>
+            </div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">
+            <div class="pipe-num">5</div>
+            <div class="pipe-body">
+              <div class="pipe-label">Audit-ready Output</div>
+              <div class="pipe-desc">Decision + probability + human-readable reasons</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>LoanSight · Explainable AI for Compliance Teams</span>
+      <span>XGBoost · SHAP · Flask · Python</span>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
