@@ -1,3 +1,13 @@
+---
+title: Loan Approval Explainable AI
+emoji: 🏦
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Explainable Loan AI — Built for Compliance Ops
 
 > **89.9% accuracy · AUC-ROC 0.899** on 50,000+ applicants · 19 engineered features · SHAP explainability · Flask REST API with full model card and API spec
