@@ -147,6 +147,7 @@ function renderResult(data) {
   document.getElementById('result-content').hidden = false;
 
   // Verdict badge
+  document.getElementById('verdict-card').className = `verdict-card ${approved ? 'approved' : 'rejected'}`;
   const badge = document.getElementById('verdict-badge');
   badge.className = `verdict-badge ${approved ? 'approved' : 'rejected'}`;
   badge.textContent = approved ? '✓' : '✕';
