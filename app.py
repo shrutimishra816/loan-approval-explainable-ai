@@ -56,7 +56,11 @@ MODEL_PATH = os.path.join(BASE_DIR, "loan_model.joblib")
 
 if not os.path.exists(MODEL_PATH):
     print("[INFO] loan_model.joblib not found — training now, please wait...")
-    import train_model
+    import sys
+    sys.path.insert(0, BASE_DIR)
+    from train_model import generate_loan_dataset, train
+    df = generate_loan_dataset(50_000)
+    trained_model, X_test, y_test = train(df)
     print("[INFO] Training complete.")
 
 try:
